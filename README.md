@@ -1,0 +1,1 @@
+# ss-sql-generator-eclipse
