@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: sql-generator
+Bundle-SymbolicName: ss-sql-generator-eclipse;singleton:=true
+Bundle-Version: 0.1
+Automatic-Module-Name: ss.sql.generator.eclipse
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui,
+ org.eclipse.core.resources,
+ org.eclipse.jdt.core,
+ org.eclipse.ui.ide,
+ org.junit,
+ org.junit.jupiter.api
+Bundle-RequiredExecutionEnvironment: JavaSE-11
