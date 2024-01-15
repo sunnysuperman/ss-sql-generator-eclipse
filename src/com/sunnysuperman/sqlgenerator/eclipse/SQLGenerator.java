@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 
 public class SQLGenerator {
+
 	public enum MysqlType {
 
 		BIGINT, INT, SMALLINT, TINYINT, BIT,
@@ -18,45 +19,6 @@ public class SQLGenerator {
 		DOUBLE, FLOAT, DECIMAL,
 
 		VARCHAR, JSON
-	}
-
-	private static final Map<String, MysqlType> typeMapping = new HashMap<>();
-	static {
-		// 基本类型及包装类型
-		typeMapping.put("long", MysqlType.BIGINT);
-		typeMapping.put(Long.class.getName(), MysqlType.BIGINT);
-
-		typeMapping.put("int", MysqlType.INT);
-		typeMapping.put(Integer.class.getName(), MysqlType.INT);
-
-		typeMapping.put("short", MysqlType.SMALLINT);
-		typeMapping.put(Short.class.getName(), MysqlType.SMALLINT);
-
-		typeMapping.put("byte", MysqlType.TINYINT);
-		typeMapping.put(Byte.class.getName(), MysqlType.TINYINT);
-
-		typeMapping.put("boolean", MysqlType.BIT);
-		typeMapping.put(Boolean.class.getName(), MysqlType.BIT);
-
-		typeMapping.put("double", MysqlType.DOUBLE);
-		typeMapping.put(Double.class.getName(), MysqlType.DOUBLE);
-
-		typeMapping.put("float", MysqlType.FLOAT);
-		typeMapping.put(Float.class.getName(), MysqlType.FLOAT);
-
-		typeMapping.put("char", MysqlType.VARCHAR);
-		typeMapping.put(Character.class.getName(), MysqlType.VARCHAR);
-
-		// 字串&算术&日期
-		typeMapping.put(String.class.getName(), MysqlType.VARCHAR);
-		typeMapping.put(BigDecimal.class.getName(), MysqlType.DECIMAL);
-		Class<?>[] dateTypes = new Class<?>[] { Date.class, LocalDateTime.class, LocalDate.class };
-		for (Class<?> type : dateTypes) {
-			typeMapping.put(type.getName(), MysqlType.BIGINT);
-		}
-
-		// 枚举
-		typeMapping.put(Enumeration.class.getName(), MysqlType.TINYINT);
 	}
 
 	public static class TableColumn {
@@ -193,6 +155,46 @@ public class SQLGenerator {
 
 	}
 
+	private static final Map<String, MysqlType> typeMapping = new HashMap<>();
+
+	static {
+		// 基本类型及包装类型
+		typeMapping.put("long", MysqlType.BIGINT);
+		typeMapping.put(Long.class.getName(), MysqlType.BIGINT);
+
+		typeMapping.put("int", MysqlType.INT);
+		typeMapping.put(Integer.class.getName(), MysqlType.INT);
+
+		typeMapping.put("short", MysqlType.SMALLINT);
+		typeMapping.put(Short.class.getName(), MysqlType.SMALLINT);
+
+		typeMapping.put("byte", MysqlType.TINYINT);
+		typeMapping.put(Byte.class.getName(), MysqlType.TINYINT);
+
+		typeMapping.put("boolean", MysqlType.BIT);
+		typeMapping.put(Boolean.class.getName(), MysqlType.BIT);
+
+		typeMapping.put("double", MysqlType.DOUBLE);
+		typeMapping.put(Double.class.getName(), MysqlType.DOUBLE);
+
+		typeMapping.put("float", MysqlType.FLOAT);
+		typeMapping.put(Float.class.getName(), MysqlType.FLOAT);
+
+		typeMapping.put("char", MysqlType.VARCHAR);
+		typeMapping.put(Character.class.getName(), MysqlType.VARCHAR);
+
+		// 字串&算术&日期
+		typeMapping.put(String.class.getName(), MysqlType.VARCHAR);
+		typeMapping.put(BigDecimal.class.getName(), MysqlType.DECIMAL);
+		Class<?>[] dateTypes = new Class<?>[] { Date.class, LocalDateTime.class, LocalDate.class };
+		for (Class<?> type : dateTypes) {
+			typeMapping.put(type.getName(), MysqlType.BIGINT);
+		}
+
+		// 枚举
+		typeMapping.put(Enumeration.class.getName(), MysqlType.TINYINT);
+	}
+
 	public static String generate(TableDefinition def) {
 		StringBuilder sql = new StringBuilder();
 		String tableName = def.name;
@@ -222,7 +224,6 @@ public class SQLGenerator {
 				sql.append(indent);
 				String columnName = columnName(column, def);
 				MysqlType sqlType = ensureSqlTypeFromJavaType(column.javaType);
-				String comment = StringUtil.or(column.comment, "");
 				// `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT 'ID',
 				// `name` VARCHAR(255) NOT NULL COMMENT '',
 				sql.append('`').append(columnName).append('`');
@@ -239,7 +240,7 @@ public class SQLGenerator {
 					sql.append(blank).append("AUTO_INCREMENT");
 				}
 				sql.append(blank).append("COMMENT");
-				sql.append(blank).append("'").append(comment).append("'");
+				sql.append(blank).append("'").append(StringUtil.or(column.comment, StringUtil.EMPTY)).append("'");
 				sql.append(newLine);
 			}
 		}
@@ -257,7 +258,8 @@ public class SQLGenerator {
 		if (idColumn != null && idColumn.autoIncrement) {
 			sql.append(" AUTO_INCREMENT=1");
 		}
-		sql.append(" DEFAULT CHARSET = utf8mb4 COMMENT = '").append(StringUtil.or(def.comment, tableName)).append("';");
+		sql.append(" DEFAULT CHARSET = utf8mb4 COMMENT = '").append(StringUtil.or(def.comment, StringUtil.EMPTY))
+				.append("';");
 		return sql.toString();
 	}
 
